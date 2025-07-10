@@ -1,1 +1,3 @@
-# quickpost-blog-platform-114105
+# Project Repository
+
+This is the initial README file for the project.
