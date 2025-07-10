@@ -1,0 +1,1 @@
+{"is_source_file": true, "file_id": 32, "git_revision": "", "state": 1, "description": "", "external_files": [], "external_methods": [], "published": [], "classes": [], "methods": [], "calls": [], "search-terms": [], "hash": "491c77727061898a506ea258d1efe736", "format-version": 4, "code-base-name": "nextjs_frontend", "filename": "assets/supabase.md", "knowledge_revision": 81}
