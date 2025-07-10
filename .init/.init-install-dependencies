@@ -1,0 +1,4 @@
+{
+    "command": "npm install",
+    "working_directory": "/home/kavia/workspace/code-generation/quickpost-blog-platform-114105/nextjs_frontend"
+}
