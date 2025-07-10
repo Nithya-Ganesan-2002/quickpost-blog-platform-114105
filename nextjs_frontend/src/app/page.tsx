@@ -4,12 +4,12 @@ import Sidebar from "@/components/Sidebar";
 import PostEditorModal from "@/components/PostEditorModal";
 import PostView from "@/components/PostView";
 import { useState, useEffect, useCallback } from "react";
-import { usePosts, Post } from "@/hooks/usePosts";
+import { usePosts, Post, CreatePostResult } from "@/hooks/usePosts";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
   const { user } = useAuth();
-  const { posts, createPost, updatePost, loading } = usePosts(false);
+  const { posts, createPost, updatePost, fetchPosts, loading } = usePosts(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -50,8 +50,22 @@ export default function Home() {
   const handleSavePost = async (title: string, content: string, id?: string) => {
     if (id && editingPost) {
       await updatePost(id, title, content);
+      await fetchPosts();
+      // Optionally re-select the updated post
+      setSelectedPost((prev) => {
+        if (prev && prev.id === id) {
+          return { ...prev, title, content };
+        }
+        return prev;
+      });
     } else if (user) {
-      await createPost(title, content, user.id);
+      const { data, error }: CreatePostResult = await createPost(title, content, user.id);
+      if (!error && Array.isArray(data) && data.length > 0) {
+        await fetchPosts();
+        setSelectedPost(data[0]);
+      } else {
+        await fetchPosts();
+      }
     }
     setModalOpen(false);
   };

@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export type Post = {
   id: string;
@@ -9,6 +10,11 @@ export type Post = {
   user_id: string;
   created_at: string;
   updated_at?: string;
+};
+
+export type CreatePostResult = {
+  data: Post[] | null;
+  error: PostgrestError | null;
 };
 
 export const usePosts = (userOnly: boolean = false, userId?: string) => {
@@ -28,14 +34,23 @@ export const usePosts = (userOnly: boolean = false, userId?: string) => {
   }, [userOnly, userId]);
 
   // PUBLIC_INTERFACE
-  const createPost = async (title: string, content: string, user_id: string) => {
-    const { data, error } = await supabase.from("posts").insert([{ title, content, user_id }]);
-    return { data, error };
+  const createPost = async (
+    title: string,
+    content: string,
+    user_id: string
+  ): Promise<CreatePostResult> => {
+    const { data, error } = await supabase
+      .from("posts")
+      .insert([{ title, content, user_id }]);
+    return { data: data as Post[] | null, error: error as PostgrestError | null };
   };
 
   // PUBLIC_INTERFACE
   const updatePost = async (id: string, title: string, content: string) => {
-    const { data, error } = await supabase.from("posts").update({ title, content, updated_at: new Date().toISOString() }).eq("id", id);
+    const { data, error } = await supabase
+      .from("posts")
+      .update({ title, content, updated_at: new Date().toISOString() })
+      .eq("id", id);
     return { data, error };
   };
 
@@ -49,10 +64,15 @@ export const usePosts = (userOnly: boolean = false, userId?: string) => {
   useEffect(() => {
     fetchPosts();
 
-    const channel = supabase.channel("realtime-posts")
-      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => {
-        fetchPosts();
-      })
+    const channel = supabase
+      .channel("realtime-posts")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "posts" },
+        () => {
+          fetchPosts();
+        }
+      )
       .subscribe();
 
     return () => {
